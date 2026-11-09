@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#1a1a2e">
+  <title>Калькулятор зарплаты — Igor</title>
+  <style>
+    :root {
+      --bg: #0f0f1a;
+      --card: #1a1a2e;
+      --accent: #4cc9f0;
+      --accent2: #7209b7;
+      --text: #e8e8e8;
+      --muted: #a0a0b0;
+      --success: #2ecc71;
+      --btn-bg: #252540;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 16px;
+      line-height: 1.4;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+      padding-top: 8px;
+    }
+
+    .header h1 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .header p {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 18px;
+      margin-bottom: 14px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+
+    .card-title {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .quick-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .quick-btn {
+      flex: 1 1 calc(33% - 8px);
+      min-width: 90px;
+      padding: 10px 6px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      border: 1px solid #333355;
+      border-radius: 10px;
+      background: var(--btn-bg);
+      color: var(--text);
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+    }
+
+    .quick-btn:active {
+      background: #333355;
+      border-color: var(--accent);
+    }
+
+    .input-group {
+      margin-bottom: 14px;
+    }
+
+    .input-group label {
+      display: block;
+      font-size: 0.9rem;
+      margin-bottom: 5px;
+      color: var(--text);
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 13px 14px;
+      font-size: 1.1rem;
+      border: 2px solid #2a2a40;
+      border-radius: 12px;
+      background: #12121f;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .input-group input:focus {
+      border-color: var(--accent);
+    }
+
+    .input-group .hint {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 15px;
+      font-size: 1.05rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: white;
+      cursor: pointer;
+      margin-top: 4px;
+      transition: transform 0.15s, opacity 0.15s;
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+      opacity: 0.9;
+    }
+
+    .btn-reset {
+      background: #252540;
+      border: 1px solid #333355;
+      margin-top: 8px;
+    }
+
+    .result {
+      display: none;
+    }
+
+    .result.show {
+      display: block;
+    }
+
+    .result-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 9px 0;
+      border-bottom: 1px solid #2a2a40;
+    }
+
+    .result-row:last-child {
+      border-bottom: none;
+    }
+
+    .result-row .label {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .result-row .value {
+      font-weight: 600;
+    }
+
+    .result-row.total {
+      margin-top: 6px;
+      padding-top: 12px;
+      border-top: 2px solid var(--accent);
+      border-bottom: none;
+    }
+
+    .result-row.total .label,
+    .result-row.total .value {
+      font-size: 1.2rem;
+      color: var(--success);
+    }
+
+    .rates-info {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 12px;
+      line-height: 1.45;
+    }
+
+    .footer {
+      text-align: center;
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 18px;
+      padding-bottom: 16px;
+    }
+
+    .saved-note {
+      font-size: 0.75rem;
+      color: var(--accent);
+      text-align: center;
+      margin-top: 8px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .saved-note.show {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Калькулятор зарплаты</h1>
+    <p>Tallinna Linnatransport • 2026</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Быстрый выбор</div>
+    <div class="quick-buttons">
+      <button class="quick-btn" onclick="setValues(176, 0)">176 ч<br><small>норма</small></button>
+      <button class="quick-btn" onclick="setValues(184, 0)">184 ч<br><small>как в окт</small></button>
+      <button class="quick-btn" onclick="setValues(48, 21)">48 ч + 21д<br><small>отпуск</small></button>
+      <button class="quick-btn" onclick="setValues(0, 21)">Только 21д<br><small>отпуск</small></button>
+      <button class="quick-btn" onclick="setValues(162, 0)">162 ч</button>
+      <button class="quick-btn" onclick="setValues(189, 0)">189 ч</button>
+    </div>
+
+    <div class="card-title" style="margin-top: 8px;">Или введите сами</div>
+
+    <div class="input-group">
+      <label>Рабочие часы</label>
+      <input type="number" id="hours" inputmode="decimal" placeholder="например 184" step="0.01" min="0">
+    </div>
+
+    <div class="input-group">
+      <label>Дни отпуска</label>
+      <input type="number" id="vacationDays" inputmode="decimal" placeholder="0" step="0.01" min="0" value="0">
+    </div>
+
+    <button class="btn" onclick="calculate(true, true)">Рассчитать</button>
+    <button class="btn btn-reset" onclick="resetAll()">Сбросить сохранённые данные</button>
+    <div class="saved-note" id="savedNote">Данные сохранены</div>
+  </div>
+
+  <div class="card result" id="resultCard">
+    <div class="card-title">Результат</div>
+
+    <div class="result-row">
+      <span class="label">Брутто за работу</span>
+      <span class="value" id="workGross">0 €</span>
+    </div>
+    <div class="result-row">
+      <span class="label">Отпускные (брутто)</span>
+      <span class="value" id="vacGross">0 €</span>
+    </div>
+    <div class="result-row">
+      <span class="label">Всего брутто</span>
+      <span class="value" id="totalGross">0 €</span>
+    </div>
+    <div class="result-row">
+      <span class="label">II ступень (2%)</span>
+      <span class="value" id="pension">0 €</span>
+    </div>
+    <div class="result-row">
+      <span class="label">Безработица (1,6%)</span>
+      <span class="value" id="unemp">0 €</span>
+    </div>
+    <div class="result-row">
+      <span class="label">Подоходный налог</span>
+      <span class="value" id="tax">0 €</span>
+    </div>
+    <div class="result-row total">
+      <span class="label">На руки</span>
+      <span class="value" id="net">0 €</span>
+    </div>
+
+    <div class="rates-info">
+      Ставка ≈ 12,84 €/час (с ночными и качественной надбавкой)<br>
+      Отпускные ≈ 78,07 €/день • Необлагаемый минимум 700 €
+    </div>
+  </div>
+
+  <div class="footer">
+    Работает офлайн • Данные сохраняются автоматически<br>
+    Добавь на главный экран телефона
+  </div>
+
+  <script>
+    const AVG_HOURLY_RATE = 12.84;
+    const VACATION_DAY_RATE = 78.07;
+    const PENSION_RATE = 0.02;
+    const UNEMP_RATE = 0.016;
+    const TAX_RATE = 0.22;
+    const TAX_FREE = 700;
+
+    // Загрузка сохранённых данных
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedHours = localStorage.getItem('hours');
+      const savedVac = localStorage.getItem('vacationDays');
+      if (savedHours !== null) document.getElementById('hours').value = savedHours;
+      if (savedVac !== null) document.getElementById('vacationDays').value = savedVac;
+
+      // Если есть сохранённые данные — сразу считаем, но без прокрутки
+      if (savedHours !== null || savedVac !== null) {
+        calculate(false, false);
+      }
+    });
+
+    function setValues(hours, vacDays) {
+      document.getElementById('hours').value = hours;
+      document.getElementById('vacationDays').value = vacDays;
+      calculate(true, true);
+    }
+
+    function format(num) {
+      return num.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+    }
+
+    function parseNonNegative(id) {
+      const value = parseFloat(document.getElementById(id).value);
+      if (!Number.isFinite(value) || value < 0) return 0;
+      return value;
+    }
+
+    function calculate(showSave = true, scroll = true) {
+      const hours = parseNonNegative('hours');
+      const vacationDays = parseNonNegative('vacationDays');
+
+      // Сохраняем
+      localStorage.setItem('hours', hours);
+      localStorage.setItem('vacationDays', vacationDays);
+
+      if (showSave) {
+        const note = document.getElementById('savedNote');
+        note.classList.add('show');
+        setTimeout(() => note.classList.remove('show'), 1500);
+      }
+
+      // Расчёт
+      const workGross = hours * AVG_HOURLY_RATE;
+      const vacGross = vacationDays * VACATION_DAY_RATE;
+      const totalGross = workGross + vacGross;
+
+      const pension = totalGross * PENSION_RATE;
+      const unemp = totalGross * UNEMP_RATE;
+      const taxable = Math.max(0, totalGross - pension - unemp - TAX_FREE);
+      const tax = taxable * TAX_RATE;
+      const net = totalGross - pension - unemp - tax;
+
+      document.getElementById('workGross').textContent = format(workGross);
+      document.getElementById('vacGross').textContent = format(vacGross);
+      document.getElementById('totalGross').textContent = format(totalGross);
+      document.getElementById('pension').textContent = format(pension);
+      document.getElementById('unemp').textContent = format(unemp);
+      document.getElementById('tax').textContent = format(tax);
+      document.getElementById('net').textContent = format(net);
+
+      document.getElementById('resultCard').classList.add('show');
+
+      if (scroll) {
+        document.getElementById('resultCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+
+    function resetAll() {
+      localStorage.removeItem('hours');
+      localStorage.removeItem('vacationDays');
+      document.getElementById('hours').value = '';
+      document.getElementById('vacationDays').value = '0';
+      document.getElementById('resultCard').classList.remove('show');
+
+      const note = document.getElementById('savedNote');
+      note.textContent = 'Сохранённые данные удалены';
+      note.classList.add('show');
+      setTimeout(() => {
+        note.classList.remove('show');
+        setTimeout(() => { note.textContent = 'Данные сохранены'; }, 300);
+      }, 1500);
+    }
+
+    document.querySelectorAll('input').forEach(input => {
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') calculate(true, true);
+      });
+    });
+  </script>
+</body>
+</html>
